@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mallorca Garden AI - Diseñador de Jardines</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Playfair+Display:ital,wght@0,600;1,600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="background-overlay"></div>
+
+    <main class="app-container">
+        <header class="app-header">
+            <div class="logo">🌿 Mallorca Garden AI</div>
+            <h1>Diseña tu oasis mediterráneo</h1>
+            <p class="subtitle">Ciencia y estética unidas para crear jardines que prosperan en la isla.</p>
+        </header>
+
+        <section id="input-section" class="glass-panel">
+            <!-- Indicador de progreso -->
+            <div class="progress-indicator">
+                <div class="progress-step active" data-step="1">
+                    <span class="step-number">1</span>
+                    <span class="step-label">Terreno</span>
+                </div>
+                <div class="progress-step" data-step="2">
+                    <span class="step-number">2</span>
+                    <span class="step-label">Suelo</span>
+                </div>
+                <div class="progress-step" data-step="3">
+                    <span class="step-number">3</span>
+                    <span class="step-label">Estilo</span>
+                </div>
+                <div class="progress-step" data-step="4">
+                    <span class="step-number">4</span>
+                    <span class="step-label">Presupuesto</span>
+                </div>
+            </div>
+
+            <form id="garden-form">
+                <!-- Paso 1: Terreno -->
+                <div class="form-group">
+                    <label>1. Sube fotos de tu terreno</label>
+                    <div class="file-upload-wrapper">
+                        <input type="file" id="terrain-photos" multiple accept="image/*">
+                        <div class="upload-placeholder">
+                            <span>📸 Arrastra o selecciona fotos</span>
+                        </div>
+                    </div>
+                    <div id="preview-gallery" class="preview-gallery"></div>
+                </div>
+
+                <!-- Nuevo: Medidas del Jardín -->
+                <div class="form-group">
+                    <label>1b. Medidas del Jardín</label>
+                    <div class="measurements-grid">
+                        <div class="measurement-input">
+                            <label for="garden-length">Largo (m)</label>
+                            <input type="number" id="garden-length" placeholder="Ej: 20" min="1" step="0.1">
+                        </div>
+                        <div class="measurement-input">
+                            <label for="garden-width">Ancho (m)</label>
+                            <input type="number" id="garden-width" placeholder="Ej: 15" min="1" step="0.1">
+                        </div>
+                        <div class="measurement-result" id="garden-area">
+                            <span class="area-label">Área estimada:</span>
+                            <span class="area-value">-- m²</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Paso 2: Suelo -->
+                <div class="form-group">
+                    <label>2. Tipo de Suelo (Estimado)</label>
+                    <div class="options-grid" id="soil-options">
+                        <div class="option-card" data-value="clay">
+                            <span class="icon">🧱</span>
+                            <h3>Arcilloso</h3>
+                            <p>Rojizo, pesado, retiene agua.</p>
+                        </div>
+                        <div class="option-card" data-value="limestone">
+                            <span class="icon">🪨</span>
+                            <h3>Calcáreo</h3>
+                            <p>Blanquecino, pedregoso, común en la isla.</p>
+                        </div>
+                        <div class="option-card" data-value="sandy">
+                            <span class="icon">🏖️</span>
+                            <h3>Arenoso</h3>
+                            <p>Drena muy rápido, cerca de costa.</p>
+                        </div>
+                    </div>
+                    <input type="hidden" id="soil-input" required>
+                </div>
+
+                <!-- Paso 3: Estilo -->
+                <div class="form-group">
+                    <label>3. Estilo Deseado</label>
+                    <select id="style-input" required>
+                        <option value="" disabled selected>Selecciona un estilo...</option>
+                        <option value="mediterranean">Mediterráneo Clásico (Possessió)</option>
+                        <option value="modern">Minimalismo Balear</option>
+                        <option value="xerogardening">Eco-Xerojardín (Ahorro agua)</option>
+                        <option value="tropical">Tropical Contemporáneo</option>
+                        <option value="coastal">Costero Resiliente</option>
+                        <option value="zen">Contemporáneo/Zen</option>
+                    </select>
+                </div>
+
+                <!-- Paso 4: Presupuesto -->
+                <div class="form-group">
+                    <label>4. Presupuesto Estimado (€)</label>
+                    <input type="number" id="budget-input" placeholder="Ej: 5000" min="200" required>
+                </div>
+
+                <button type="submit" class="cta-button">✨ Generar Propuestas</button>
+            </form>
+        </section>
+
+        <section id="results-section" class="hidden">
+            <div class="results-header">
+                <h2>Tus Propuestas Personalizadas</h2>
+                <button id="comparison-toggle" class="comparison-toggle">
+                    <span class="toggle-icon">⚖️</span>
+                    <span class="toggle-text">Modo Comparación</span>
+                </button>
+            </div>
+
+            <!-- Comparison Table -->
+            <div id="comparison-container" class="comparison-container">
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Métrica</th>
+                            <th>🌿 Sostenible</th>
+                            <th>🎨 Estética</th>
+                        </tr>
+                    </thead>
+                    <tbody id="comparison-tbody">
+                        <!-- JavaScript will populate this -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="proposals-container">
+                <!-- Propuesta A -->
+                <article class="proposal-card" id="proposal-a">
+                    <div class="card-header">
+                        <span class="badge">Opción Sostenible</span>
+                        <h3>Jardín Nativo Resiliente</h3>
+                    </div>
+                    <div class="proposal-content">
+                        <p class="description">Optimizado para el clima de Mallorca con el menor mantenimiento
+                            posible.
+                        </p>
+                        <ul class="plant-list">
+                            <!-- JS inyectará plantas aquí -->
+                        </ul>
+                        <div class="additional-notes" style="display: none;">
+                            <!-- JS inyectará recomendaciones aquí -->
+                        </div>
+                        <div class="cost-breakdown">
+                            <span>Estimación:</span>
+                            <span class="cost-value">-- €</span>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Propuesta B -->
+                <article class="proposal-card" id="proposal-b">
+                    <div class="card-header">
+                        <span class="badge aesthetic">Opción Estética</span>
+                        <h3>Jardín de Impacto Visual</h3>
+                    </div>
+                    <div class="proposal-content">
+                        <p class="description">Diseño enfocado en la belleza y el estilo seleccionado.</p>
+                        <ul class="plant-list">
+                            <!-- JS inyectará plantas aquí -->
+                        </ul>
+                        <div class="additional-notes" style="display: none;">
+                            <!-- JS inyectará recomendaciones aquí -->
+                        </div>
+                        <div class="cost-breakdown">
+                            <span>Estimación:</span>
+                            <span class="cost-value">-- €</span>
+                        </div>
+                    </div>
+                </article>
+            </div>
+            <button id="reset-btn" class="secondary-button">Diseñar otro jardín</button>
+        </section>
+    </main>
+
+    <!-- Loading Spinner -->
+    <div id="loading-overlay" class="loading-overlay hidden">
+        <div class="spinner">
+            <div class="leaf">🌿</div>
+            <p>Generando tus propuestas personalizadas...</p>
+        </div>
+    </div>
+
+    <script type="module" src="app.js"></script>
+</body>
+
+</html>
