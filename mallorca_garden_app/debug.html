@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug - Mallorca Garden</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+
+        .info {
+            color: blue;
+        }
+
+        pre {
+            background: #fff;
+            padding: 10px;
+            border: 1px solid #ddd;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🔍 Diagnóstico de Mallorca Garden App</h1>
+    <div id="results"></div>
+
+    <script type="module">
+        const resultsDiv = document.getElementById('results');
+
+        function log(message, type = 'info') {
+            const p = document.createElement('p');
+            p.className = type;
+            p.textContent = message;
+            resultsDiv.appendChild(p);
+        }
+
+        function logObject(title, obj) {
+            const h3 = document.createElement('h3');
+            h3.textContent = title;
+            resultsDiv.appendChild(h3);
+
+            const pre = document.createElement('pre');
+            pre.textContent = JSON.stringify(obj, null, 2);
+            resultsDiv.appendChild(pre);
+        }
+
+        try {
+            log('✅ JavaScript está funcionando', 'success');
+            log('✅ Los módulos ES6 están soportados', 'success');
+
+            // Intentar importar datos
+            import('./data/plants.js')
+                .then(module => {
+                    log('✅ plants.js se importó correctamente', 'success');
+
+                    const { plantsData, stylesInfo } = module;
+
+                    if (!plantsData) {
+                        log('❌ ERROR: plantsData no está definido', 'error');
+                        return;
+                    }
+
+                    log(`✅ Se encontraron ${plantsData.length} plantas`, 'success');
+
+                    // Probar filtrado con diferentes suelos
+                    const soilTypes = ['clay', 'limestone', 'sandy'];
+
+                    soilTypes.forEach(soil => {
+                        const viablePlants = plantsData.filter(plant =>
+                            plant.soilType.includes(soil) || plant.soilType.includes('any')
+                        );
+
+                        log(`Suelo "${soil}": ${viablePlants.length} plantas viables`);
+
+                        const sustainablePlants = viablePlants.filter(p =>
+                            ['very_low', 'low'].includes(p.waterNeeds)
+                        );
+
+                        log(`  → Sostenibles (low water): ${sustainablePlants.length} plantas`);
+
+                        // Probar con cada estilo
+                        const styles = ['mediterranean', 'modern', 'xerogardening', 'tropical', 'coastal', 'zen'];
+                        styles.forEach(style => {
+                            const stylisticPlants = viablePlants.filter(p =>
+                                p.style.includes(style)
+                            );
+                            log(`  → Estilo "${style}": ${stylisticPlants.length} plantas`);
+                        });
+                    });
+
+                    // Mostrar todas las plantas
+                    logObject('Todas las plantas:', plantsData.map(p => ({
+                        name: p.name,
+                        soilType: p.soilType,
+                        waterNeeds: p.waterNeeds,
+                        style: p.style
+                    })));
+
+                })
+                .catch(error => {
+                    log('❌ ERROR al importar plants.js: ' + error.message, 'error');
+                    console.error('Error completo:', error);
+                });
+
+        } catch (error) {
+            log('❌ ERROR CRÍTICO: ' + error.message, 'error');
+            console.error('Error completo:', error);
+        }
+    </script>
+</body>
+
+</html>
