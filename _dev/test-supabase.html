@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Supabase - Mallorca Garden AI</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: #f5f5f5;
+        }
+
+        .test-section {
+            background: white;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #556B2F;
+        }
+
+        h2 {
+            color: #2C3E50;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+        }
+
+        button {
+            padding: 0.6rem 1.2rem;
+            background: #556B2F;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 0.5rem;
+        }
+
+        button:hover {
+            background: #4a5b28;
+        }
+
+        .result {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-left: 4px solid #556B2F;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .result.success {
+            border-color: #2e7d32;
+            background: #e8f5e9;
+        }
+
+        .result.error {
+            border-color: #dc2626;
+            background: #ffebee;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+
+        .status.pending {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+
+        .status.success {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .status.error {
+            background: #ffebee;
+            color: #dc2626;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🧪 Pruebas de Supabase</h1>
+    <p>Esta página te permite verificar que la configuración de Supabase esté correcta.</p>
+
+    <!-- Test 1: Connection -->
+    <div class="test-section">
+        <h2>1. Verificar Conexión <span id="status-1" class="status pending">Pendiente</span></h2>
+        <button onclick="testConnection()">Probar Conexión</button>
+        <div id="result-1" class="result" style="display:none;"></div>
+    </div>
+
+    <!-- Test 2: Save Design -->
+    <div class="test-section">
+        <h2>2. Guardar Diseño de Prueba <span id="status-2" class="status pending">Pendiente</span></h2>
+        <button onclick="testSaveDesign()">Guardar Diseño</button>
+        <div id="result-2" class="result" style="display:none;"></div>
+    </div>
+
+    <!-- Test 3: List Designs -->
+    <div class="test-section">
+        <h2>3. Listar Diseños <span id="status-3" class="status pending">Pendiente</span></h2>
+        <button onclick="testGetDesigns()">Obtener Diseños</button>
+        <div id="result-3" class="result" style="display:none;"></div>
+    </div>
+
+    <!-- Test 4: Delete Design -->
+    <div class="test-section">
+        <h2>4. Eliminar Diseño <span id="status-4" class="status pending">Pendiente</span></h2>
+        <button onclick="testDeleteDesign()">Eliminar Último</button>
+        <div id="result-4" class="result" style="display:none;"></div>
+    </div>
+
+    <script type="module">
+        import { saveDesign, getAllDesigns, deleteDesign } from './supabase-service.js';
+
+        let lastDesignId = null;
+
+        // Test 1: Connection - Ahora hace una prueba real
+        window.testConnection = async function () {
+            const resultEl = document.getElementById('result-1');
+            const statusEl = document.getElementById('status-1');
+            resultEl.style.display = 'block';
+            resultEl.textContent = '⏳ Verificando conexión...';
+
+            try {
+                // Hacer una consulta real para verificar
+                const designs = await getAllDesigns();
+
+                resultEl.textContent = `✅ Supabase configurado correctamente
+Conexión: Exitosa
+Diseños en base de datos: ${designs.length}`;
+                resultEl.className = 'result success';
+                statusEl.textContent = '✓ OK';
+                statusEl.className = 'status success';
+            } catch (error) {
+                if (error.message.includes('no está configurado')) {
+                    resultEl.textContent = '❌ Supabase NO está configurado\nRevisa supabase-config.local.js';
+                } else if (error.message.includes('garden_designs')) {
+                    resultEl.textContent = '⚠️ Configuración OK, pero falta la tabla\nError: ' + error.message + '\n\nEjecuta el SQL de CONFIGURAR_AHORA.md';
+                } else {
+                    resultEl.textContent = '❌ Error: ' + error.message;
+                }
+                resultEl.className = 'result error';
+                statusEl.textContent = '✗ Error';
+                statusEl.className = 'status error';
+            }
+        };
+
+        // Test 2: Save Design
+        window.testSaveDesign = async function () {
+            const resultEl = document.getElementById('result-2');
+            const statusEl = document.getElementById('status-2');
+            resultEl.style.display = 'block';
+            resultEl.textContent = '⏳ Guardando diseño de prueba...';
+
+            try {
+                const testDesign = {
+                    name: `Test ${new Date().toLocaleTimeString()}`,
+                    inputs: {
+                        soil: 'limestone',
+                        style: 'mediterranean',
+                        budget: 5000,
+                        length: 20,
+                        width: 15,
+                        area: 300
+                    },
+                    proposals: {
+                        sustainable: {
+                            title: 'Sostenible Test',
+                            description: 'Prueba sostenible',
+                            plants: [],
+                            totalCost: 2500
+                        },
+                        aesthetic: {
+                            title: 'Estético Test',
+                            description: 'Prueba estética',
+                            plants: [],
+                            totalCost: 3000
+                        }
+                    },
+                    comparisonData: {
+                        sustainable: { cost: 2500, maintenance: 'low', water: 'low', plants: [] },
+                        aesthetic: { cost: 3000, maintenance: 'medium', water: 'medium', plants: [] }
+                    }
+                };
+
+                lastDesignId = await saveDesign(testDesign, []);
+
+                resultEl.textContent = `✅ Diseño guardado exitosamente\nID: ${lastDesignId}`;
+                resultEl.className = 'result success';
+                statusEl.textContent = '✓ OK';
+                statusEl.className = 'status success';
+            } catch (error) {
+                resultEl.textContent = '❌ Error al guardar: ' + error.message + '\n\n' + error.stack;
+                resultEl.className = 'result error';
+                statusEl.textContent = '✗ Error';
+                statusEl.className = 'status error';
+            }
+        };
+
+        // Test 3: Get All Designs
+        window.testGetDesigns = async function () {
+            const resultEl = document.getElementById('result-3');
+            const statusEl = document.getElementById('status-3');
+            resultEl.style.display = 'block';
+            resultEl.textContent = '⏳ Obteniendo diseños...';
+
+            try {
+                const designs = await getAllDesigns();
+
+                if (designs.length === 0) {
+                    resultEl.textContent = 'ℹ️ No hay diseños guardados aún';
+                    resultEl.className = 'result';
+                } else {
+                    const designList = designs.map(d =>
+                        `- ${d.name} (${d.style}, ${d.budget}€) - ${new Date(d.created_at).toLocaleString()}`
+                    ).join('\n');
+
+                    resultEl.textContent = `✅ ${designs.length} diseño(s) encontrado(s):\n\n${designList}`;
+                    resultEl.className = 'result success';
+
+                    // Guardar último ID para test de eliminación
+                    if (designs[0]) {
+                        lastDesignId = designs[0].id;
+                    }
+                }
+
+                statusEl.textContent = '✓ OK';
+                statusEl.className = 'status success';
+            } catch (error) {
+                resultEl.textContent = '❌ Error al obtener diseños: ' + error.message;
+                resultEl.className = 'result error';
+                statusEl.textContent = '✗ Error';
+                statusEl.className = 'status error';
+            }
+        };
+
+        // Test 4: Delete Design
+        window.testDeleteDesign = async function () {
+            const resultEl = document.getElementById('result-4');
+            const statusEl = document.getElementById('status-4');
+            resultEl.style.display = 'block';
+
+            if (!lastDesignId) {
+                resultEl.textContent = '⚠️ Primero ejecuta "Guardar Diseño" o "Listar Diseños"';
+                resultEl.className = 'result';
+                return;
+            }
+
+            resultEl.textContent = `⏳ Eliminando diseño ${lastDesignId}...`;
+
+            try {
+                await deleteDesign(lastDesignId);
+
+                resultEl.textContent = `✅ Diseño eliminado correctamente\nID eliminado: ${lastDesignId}`;
+                resultEl.className = 'result success';
+                statusEl.textContent = '✓ OK';
+                statusEl.className = 'status success';
+
+                lastDesignId = null;
+            } catch (error) {
+                resultEl.textContent = '❌ Error al eliminar: ' + error.message;
+                resultEl.className = 'result error';
+                statusEl.textContent = '✗ Error';
+                statusEl.className = 'status error';
+            }
+        };
+
+        // Auto-test connection on load
+        window.addEventListener('load', () => {
+            setTimeout(() => testConnection(), 500);
+        });
+    </script>
+</body>
+
+</html>

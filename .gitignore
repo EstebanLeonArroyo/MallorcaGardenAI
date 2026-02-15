@@ -1,0 +1,19 @@
+# Archivos de configuración local
+config.local.js
+supabase-config.local.js
+
+# Node modules (si se usa en el futuro)
+node_modules/
+
+# Logs
+*.log
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
