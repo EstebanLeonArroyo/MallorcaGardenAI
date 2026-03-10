@@ -1,0 +1,23 @@
+{
+  "name": "mallorca-garden-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "API backend for Mallorca Garden AI",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "@fal-ai/client": "^1.9.4",
+    "@google/generative-ai": "^0.24.0",
+    "@supabase/supabase-js": "^2.97.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "express-rate-limit": "^7.5.0",
+    "express-validator": "^7.2.1",
+    "helmet": "^8.1.0",
+    "multer": "^2.0.0"
+  }
+}

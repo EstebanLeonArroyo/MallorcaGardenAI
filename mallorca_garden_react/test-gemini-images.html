@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Gemini - Generacion de Imagenes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 0.5rem;
+            font-size: 1.5rem;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 2rem;
+            font-size: 0.9rem;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .test-card {
+            background: #16213e;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .test-card h2 {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            color: #e94560;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            color: #aaa;
+            margin-bottom: 0.4rem;
+        }
+
+        input,
+        textarea,
+        select {
+            width: 100%;
+            padding: 0.7rem;
+            background: #0f3460;
+            border: 1px solid #444;
+            border-radius: 8px;
+            color: #eee;
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+        }
+
+        .btn-primary {
+            background: #e94560;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #c73e54;
+        }
+
+        .btn-primary:disabled {
+            background: #555;
+            cursor: wait;
+        }
+
+        .result-box {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: #0f3460;
+            border-radius: 8px;
+            border: 1px solid #333;
+            min-height: 60px;
+            white-space: pre-wrap;
+            font-family: 'Consolas', monospace;
+            font-size: 0.85rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .result-box.success {
+            border-color: #4caf50;
+        }
+
+        .result-box.error {
+            border-color: #e94560;
+        }
+
+        .result-box.info {
+            border-color: #2196f3;
+        }
+
+        .image-result {
+            margin-top: 1rem;
+            text-align: center;
+        }
+
+        .image-result img {
+            max-width: 100%;
+            border-radius: 12px;
+            border: 2px solid #333;
+        }
+
+        .models-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .model-tag {
+            background: #0f3460;
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            border: 1px solid #333;
+        }
+
+        .model-tag.supports-image {
+            border-color: #4caf50;
+            color: #4caf50;
+        }
+
+        .status {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .status.ok {
+            color: #4caf50;
+        }
+
+        .status.fail {
+            color: #e94560;
+        }
+
+        .status.loading {
+            color: #ff9800;
+        }
+
+        .test-row {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .test-row>* {
+            flex: 1;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Test Gemini API - Generacion de Imagenes</h1>
+        <p class="subtitle">Verifica si tu API key soporta generacion de imagenes</p>
+
+        <!-- Test 1: API Key validation -->
+        <div class="test-card">
+            <h2>1. Configuracion API Key</h2>
+            <label>API Key de Gemini</label>
+            <input type="text" id="api-key" value="AIzaSyDrpoJ95OWlLehBIh4Jg5eCVcPjiATCP8c" placeholder="AIzaSy..." />
+            <button class="btn btn-primary" onclick="testApiKey()">Validar API Key</button>
+            <div id="result-key" class="result-box" style="display:none;"></div>
+        </div>
+
+        <!-- Test 2: List models -->
+        <div class="test-card">
+            <h2>2. Modelos disponibles con soporte de imagenes</h2>
+            <p style="color:#888; font-size:0.85rem; margin-bottom:1rem;">Lista los modelos disponibles y marca los que
+                soportan generacion de imagenes.</p>
+            <button class="btn btn-primary" onclick="listModels()">Listar Modelos</button>
+            <div id="result-models" class="result-box" style="display:none;"></div>
+        </div>
+
+        <!-- Test 3: Generate text (baseline) -->
+        <div class="test-card">
+            <h2>3. Test basico de texto (verificacion)</h2>
+            <label>Modelo</label>
+            <select id="text-model">
+                <option value="gemini-2.5-flash">gemini-2.5-flash</option>
+                <option value="gemini-2.0-flash">gemini-2.0-flash</option>
+                <option value="gemini-2.0-flash-exp">gemini-2.0-flash-exp</option>
+                <option value="gemini-1.5-pro">gemini-1.5-pro</option>
+            </select>
+            <button class="btn btn-primary" onclick="testText()">Enviar peticion de texto</button>
+            <div id="result-text" class="result-box" style="display:none;"></div>
+        </div>
+
+        <!-- Test 4: Generate image -->
+        <div class="test-card">
+            <h2>4. Test de generacion de imagen</h2>
+            <label>Modelo (debe soportar generacion de imagenes)</label>
+            <select id="image-model">
+                <option value="gemini-2.0-flash-exp">gemini-2.0-flash-exp (imagen nativa)</option>
+                <option value="gemini-2.0-flash">gemini-2.0-flash</option>
+                <option value="imagen-3.0-generate-002">imagen-3.0-generate-002 (Imagen 3)</option>
+            </select>
+            <label>Prompt para la imagen</label>
+            <textarea
+                id="image-prompt">Un jardin mediterraneo en Mallorca con olivos, lavanda y buganvillas, estilo acuarela</textarea>
+            <button class="btn btn-primary" onclick="testImageGeneration()">Generar Imagen</button>
+            <div id="result-image" class="result-box" style="display:none;"></div>
+            <div id="image-display" class="image-result"></div>
+        </div>
+
+        <!-- Test 5: Imagen 3 API -->
+        <div class="test-card">
+            <h2>5. Test Imagen 3 (API dedicada)</h2>
+            <p style="color:#888; font-size:0.85rem; margin-bottom:1rem;">Usa la API especifica de Imagen 3 si tu
+                proyecto tiene acceso.</p>
+            <label>Prompt</label>
+            <textarea
+                id="imagen3-prompt">A beautiful Mediterranean garden in Mallorca with olive trees and lavender</textarea>
+            <button class="btn btn-primary" onclick="testImagen3()">Probar Imagen 3</button>
+            <div id="result-imagen3" class="result-box" style="display:none;"></div>
+            <div id="imagen3-display" class="image-result"></div>
+        </div>
+    </div>
+
+    <script>
+        function getApiKey() {
+            return document.getElementById('api-key').value.trim();
+        }
+
+        function showResult(elementId, text, type = 'info') {
+            const el = document.getElementById(elementId);
+            el.style.display = 'block';
+            el.textContent = text;
+            el.className = `result-box ${type}`;
+        }
+
+        function setLoading(btn) {
+            btn.disabled = true;
+            btn.textContent = 'Procesando...';
+        }
+
+        function resetBtn(btn, text) {
+            btn.disabled = false;
+            btn.textContent = text;
+        }
+
+        // Test 1: Validate API key with a minimal request
+        async function testApiKey() {
+            const btn = event.target;
+            setLoading(btn);
+            const key = getApiKey();
+
+            if (!key) {
+                showResult('result-key', 'ERROR: No hay API key configurada', 'error');
+                resetBtn(btn, 'Validar API Key');
+                return;
+            }
+
+            try {
+                const url = `https://generativelanguage.googleapis.com/v1/models?key=${key}`;
+                const res = await fetch(url);
+
+                if (res.ok) {
+                    const data = await res.json();
+                    const count = data.models ? data.models.length : 0;
+                    showResult('result-key',
+                        `OK - API Key valida\nModelos disponibles: ${count}\nEstado: ${res.status}`, 'success');
+                } else {
+                    const err = await res.json();
+                    showResult('result-key',
+                        `ERROR ${res.status}: ${err.error?.message || JSON.stringify(err)}`, 'error');
+                }
+            } catch (e) {
+                showResult('result-key', `ERROR de red: ${e.message}`, 'error');
+            }
+            resetBtn(btn, 'Validar API Key');
+        }
+
+        // Test 2: List models with image generation support
+        async function listModels() {
+            const btn = event.target;
+            setLoading(btn);
+            const key = getApiKey();
+
+            try {
+                const url = `https://generativelanguage.googleapis.com/v1/models?key=${key}`;
+                const res = await fetch(url);
+                const data = await res.json();
+
+                if (!res.ok) {
+                    showResult('result-models', `ERROR: ${data.error?.message}`, 'error');
+                    resetBtn(btn, 'Listar Modelos');
+                    return;
+                }
+
+                const models = data.models || [];
+                let output = `Total modelos: ${models.length}\n\n`;
+
+                // Check which models support image generation
+                const imageModels = [];
+                const textModels = [];
+
+                for (const model of models) {
+                    const name = model.name.replace('models/', '');
+                    const methods = model.supportedGenerationMethods || [];
+                    const hasGenerate = methods.includes('generateContent');
+
+                    // Check if model description mentions image generation
+                    const desc = (model.description || '').toLowerCase();
+                    const displayName = (model.displayName || '').toLowerCase();
+                    const supportsImages = desc.includes('image') || displayName.includes('image') ||
+                        displayName.includes('imagen') || name.includes('imagen') ||
+                        name.includes('gemini-2.0-flash-exp');
+
+                    if (supportsImages) {
+                        imageModels.push({ name, desc: model.description, methods });
+                    }
+
+                    if (hasGenerate) {
+                        textModels.push(name);
+                    }
+                }
+
+                output += `=== MODELOS CON SOPORTE DE IMAGEN ===\n`;
+                if (imageModels.length === 0) {
+                    output += `(Ninguno detectado explicitamente)\n`;
+                } else {
+                    for (const m of imageModels) {
+                        output += `\n[IMAGE] ${m.name}\n  ${m.desc?.substring(0, 100) || 'Sin descripcion'}\n  Metodos: ${m.methods.join(', ')}\n`;
+                    }
+                }
+
+                output += `\n=== MODELOS CON generateContent ===\n`;
+                output += textModels.join('\n');
+
+                showResult('result-models', output, imageModels.length > 0 ? 'success' : 'info');
+            } catch (e) {
+                showResult('result-models', `ERROR: ${e.message}`, 'error');
+            }
+            resetBtn(btn, 'Listar Modelos');
+        }
+
+        // Test 3: Basic text generation
+        async function testText() {
+            const btn = event.target;
+            setLoading(btn);
+            const key = getApiKey();
+            const model = document.getElementById('text-model').value;
+
+            try {
+                const url = `https://generativelanguage.googleapis.com/v1/models/${model}:generateContent?key=${key}`;
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: 'Responde solo con: OK - API funcionando correctamente' }] }]
+                    })
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    showResult('result-text', `ERROR ${res.status}: ${data.error?.message || JSON.stringify(data)}`, 'error');
+                } else {
+                    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Sin respuesta';
+                    showResult('result-text', `Modelo: ${model}\nEstado: OK\nRespuesta: ${text}`, 'success');
+                }
+            } catch (e) {
+                showResult('result-text', `ERROR: ${e.message}`, 'error');
+            }
+            resetBtn(btn, 'Enviar peticion de texto');
+        }
+
+        // Test 4: Image generation with Gemini native
+        async function testImageGeneration() {
+            const btn = event.target;
+            setLoading(btn);
+            const key = getApiKey();
+            const model = document.getElementById('image-model').value;
+            const prompt = document.getElementById('image-prompt').value;
+
+            document.getElementById('image-display').innerHTML = '';
+
+            // Different endpoints for different models
+            if (model === 'imagen-3.0-generate-002') {
+                // Imagen 3 uses predict endpoint
+                await testImagen3Internal(key, prompt, 'result-image', 'image-display');
+                resetBtn(btn, 'Generar Imagen');
+                return;
+            }
+
+            try {
+                showResult('result-image', `Enviando peticion a ${model}...\nEsto puede tardar 10-30 segundos...`, 'info');
+
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+                const body = {
+                    contents: [{ parts: [{ text: `Generate an image: ${prompt}` }] }],
+                    generationConfig: {
+                        responseModalities: ["TEXT", "IMAGE"]
+                    }
+                };
+
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    showResult('result-image',
+                        `ERROR ${res.status} (${model}):\n${data.error?.message || JSON.stringify(data, null, 2)}\n\nNota: No todos los modelos soportan generacion de imagenes.\nPrueba con gemini-2.0-flash-exp.`,
+                        'error');
+                    resetBtn(btn, 'Generar Imagen');
+                    return;
+                }
+
+                // Check for image in response
+                const parts = data.candidates?.[0]?.content?.parts || [];
+                let foundImage = false;
+                let textResponse = '';
+
+                for (const part of parts) {
+                    if (part.inlineData) {
+                        foundImage = true;
+                        const mimeType = part.inlineData.mimeType || 'image/png';
+                        const base64 = part.inlineData.data;
+                        document.getElementById('image-display').innerHTML =
+                            `<img src="data:${mimeType};base64,${base64}" alt="Imagen generada" />
+                             <p style="color:#4caf50; margin-top:0.5rem;">Imagen generada correctamente</p>`;
+                    }
+                    if (part.text) {
+                        textResponse += part.text;
+                    }
+                }
+
+                if (foundImage) {
+                    showResult('result-image',
+                        `OK - Imagen generada exitosamente\nModelo: ${model}\nPartes en respuesta: ${parts.length}${textResponse ? '\nTexto: ' + textResponse.substring(0, 200) : ''}`,
+                        'success');
+                } else {
+                    showResult('result-image',
+                        `AVISO: El modelo respondio pero NO genero imagen.\nModelo: ${model}\nRespuesta: ${textResponse || JSON.stringify(data, null, 2).substring(0, 500)}\n\nEl modelo puede no soportar responseModalities: ["IMAGE"]`,
+                        'error');
+                }
+            } catch (e) {
+                showResult('result-image', `ERROR: ${e.message}`, 'error');
+            }
+            resetBtn(btn, 'Generar Imagen');
+        }
+
+        // Test 5: Imagen 3 dedicated API
+        async function testImagen3() {
+            const btn = event.target;
+            setLoading(btn);
+            const key = getApiKey();
+            const prompt = document.getElementById('imagen3-prompt').value;
+
+            document.getElementById('imagen3-display').innerHTML = '';
+            await testImagen3Internal(key, prompt, 'result-imagen3', 'imagen3-display');
+            resetBtn(btn, 'Probar Imagen 3');
+        }
+
+        async function testImagen3Internal(key, prompt, resultId, displayId) {
+            try {
+                showResult(resultId, 'Enviando peticion a Imagen 3...\nEsto puede tardar 15-60 segundos...', 'info');
+
+                // Try the v1beta endpoint for Imagen
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${key}`;
+                const body = {
+                    instances: [{ prompt: prompt }],
+                    parameters: {
+                        sampleCount: 1,
+                        aspectRatio: "1:1"
+                    }
+                };
+
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    // Try alternative endpoint
+                    const altUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:generateImages?key=${key}`;
+                    const altRes = await fetch(altUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            prompt: prompt,
+                            config: { numberOfImages: 1 }
+                        })
+                    });
+
+                    const altData = await altRes.json();
+
+                    if (!altRes.ok) {
+                        showResult(resultId,
+                            `ERROR Imagen 3:\nEndpoint predict: ${data.error?.message || 'No disponible'}\nEndpoint generateImages: ${altData.error?.message || 'No disponible'}\n\nNota: Imagen 3 puede requerir:\n- Billing activado en Google Cloud\n- API habilitada en la consola\n- Plan de pago (no disponible en plan gratuito)`,
+                            'error');
+                        return;
+                    }
+
+                    // Handle alternative endpoint response
+                    handleImagenResponse(altData, resultId, displayId);
+                    return;
+                }
+
+                handleImagenResponse(data, resultId, displayId);
+            } catch (e) {
+                showResult(resultId, `ERROR: ${e.message}`, 'error');
+            }
+        }
+
+        function handleImagenResponse(data, resultId, displayId) {
+            const predictions = data.predictions || data.generatedImages || [];
+
+            if (predictions.length > 0) {
+                const imageData = predictions[0].bytesBase64Encoded || predictions[0].image?.bytesBase64Encoded;
+                if (imageData) {
+                    document.getElementById(displayId).innerHTML =
+                        `<img src="data:image/png;base64,${imageData}" alt="Imagen generada por Imagen 3" />
+                         <p style="color:#4caf50; margin-top:0.5rem;">Imagen generada con Imagen 3</p>`;
+                    showResult(resultId, `OK - Imagen 3 funciona correctamente\nImagenes generadas: ${predictions.length}`, 'success');
+                } else {
+                    showResult(resultId, `Respuesta recibida pero sin datos de imagen:\n${JSON.stringify(data, null, 2).substring(0, 500)}`, 'error');
+                }
+            } else {
+                showResult(resultId, `Sin predicciones en la respuesta:\n${JSON.stringify(data, null, 2).substring(0, 500)}`, 'error');
+            }
+        }
+    </script>
+</body>
+
+</html>
