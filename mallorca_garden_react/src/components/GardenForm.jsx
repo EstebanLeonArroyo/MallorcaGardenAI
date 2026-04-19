@@ -119,7 +119,7 @@ export default function GardenForm({ form, onSubmit }) {
                                 type="number"
                                 id="budget-input"
                                 placeholder="Ej: 5000"
-                                min="200"
+                                min="100"
                                 required
                                 value={form.budget}
                                 onChange={(e) => form.setBudget(e.target.value)}
@@ -132,7 +132,7 @@ export default function GardenForm({ form, onSubmit }) {
                             <textarea
                                 id="extra-info-input"
                                 className="extra-info-textarea"
-                                placeholder="Ej: Quiero una zona de sombra para comer, tengo mascotas, prefiero plantas con flor..."
+                                placeholder="Ej: Añademe una lavanda y un olivo"
                                 maxLength="500"
                                 rows="3"
                                 value={form.extraInfo}

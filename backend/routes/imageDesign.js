@@ -1,5 +1,5 @@
 /**
- * Rutas de generación de imágenes de jardín con Fal.ai Seedream v5
+ * Rutas de generación de imágenes de jardín con Fal.ai Nano Banana 2
  * POST /api/image-design/:designId/generate
  */
 import { Router } from 'express';
@@ -82,12 +82,12 @@ router.post('/:designId/generate', validateDesignId.slice(0, -1), async (req, re
         console.log(`[ImageDesign] Generando imagen para diseño ${designId} (${proposalType})`);
         console.log(`[ImageDesign] Prompt: ${prompt.substring(0, 100)}...`);
 
-        // 4. Llamar a Seedream v5 Lite Edit
-        const result = await fal.subscribe('fal-ai/bytedance/seedream/v5/lite/edit', {
+        // 4. Llamar a Nano Banana 2 Edit
+        const result = await fal.subscribe('fal-ai/nano-banana-2/edit', {
             input: {
                 prompt,
                 image_urls: [originalUrl],
-                image_size: 'auto_2K',
+                aspect_ratio: 'auto',
                 num_images: 1,
             },
             logs: true,
@@ -181,7 +181,7 @@ function buildGardenPrompt(proposal, style) {
 
     const styleName = styleNames[style] || style;
 
-    return `Edit this garden photo: completely remove and ignore ALL existing plants, grass, and vegetation visible in the original image, EXCEPT for lateral hedges (boundary hedges on the sides) which must be preserved as they are. Replace the rest with ONLY the following ${totalPlants} plants, respecting the EXACT quantity of each one — do not add more or fewer than specified:\n\n${plantLines}\n\nStyle: ${styleName} garden in Mallorca, Spain.\n\nIMPORTANT RULES:\n- Strictly respect the exact number of each plant listed above.\n- Remove any pre-existing vegetation from the original photo EXCEPT lateral/boundary hedges — keep those intact.\n- Keep ALL non-plant elements unchanged: walls, paths, buildings, fences, furniture, terrain shape.\n- Arrange the plants naturally within the garden space.\n- Photorealistic render, professional garden design, natural Mediterranean lighting.`;
+    return `Edit this garden photo: keep the existing grass, ground cover, soil, and terrain exactly as they are. Also preserve lateral hedges (boundary hedges on the sides). Remove only other existing plants, shrubs, and trees, and replace them with ONLY the following ${totalPlants} plants, respecting the EXACT quantity of each one — do not add more or fewer than specified:\n\n${plantLines}\n\nStyle: ${styleName} garden in Mallorca, Spain.\n\nIMPORTANT RULES:\n- Strictly respect the exact number of each plant listed above.\n- PRESERVE all existing grass, lawn, ground cover, bare soil, and terrain — do NOT remove or replace them.\n- PRESERVE lateral/boundary hedges — keep those intact.\n- Keep ALL non-plant elements unchanged: walls, paths, buildings, fences, furniture, terrain shape.\n- Arrange the new plants naturally within the garden space, integrating them with the existing ground.\n- Photorealistic render, professional garden design, natural Mediterranean lighting.`;
 }
 
 export default router;
