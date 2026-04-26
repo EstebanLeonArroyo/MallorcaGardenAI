@@ -1,3 +1,5 @@
+import logoImg from '/logo.png';
+
 export default function Sidebar({ activeView, onNavigate, userEmail, onSignOut }) {
     const navItems = [
         { id: 'form', label: 'Crear Jardin', icon: 'leaf' },
@@ -30,7 +32,7 @@ export default function Sidebar({ activeView, onNavigate, userEmail, onSignOut }
     return (
         <aside className="sidebar">
             <div className="sidebar-logo">
-                <img src="/logo.png" alt="Mallorca Garden AI" className="sidebar-logo-img" />
+                <img src={logoImg} alt="Mallorca Garden AI" className="sidebar-logo-img" />
                 <span className="sidebar-logo-text">Mallorca Garden AI</span>
             </div>
 
@@ -48,7 +50,7 @@ export default function Sidebar({ activeView, onNavigate, userEmail, onSignOut }
             </nav>
 
             <div className="sidebar-logo-showcase">
-                <img src="/logo.png" alt="Mallorca Garden AI" className="sidebar-logo-showcase-img" />
+                <img src={logoImg} alt="Mallorca Garden AI" className="sidebar-logo-showcase-img" />
             </div>
 
             {userEmail && (

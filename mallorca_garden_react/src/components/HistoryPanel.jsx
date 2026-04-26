@@ -54,7 +54,7 @@ export default function HistoryPanel({ history, onClose, onLoadDesign }) {
     }, []);
 
     const handleDelete = async (id, name) => {
-        if (confirm(`Estas seguro de que quieres eliminar "${name}"?\n\nEsta accion no se puede deshacer.`)) {
+        if (confirm(`¿Estás seguro de que quieres eliminar "${name}"?\n\nEsta acción no se puede deshacer.`)) {
             try {
                 await history.deleteDesign(id);
             } catch {

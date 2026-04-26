@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { useImageDesign } from '../hooks/useImageDesign';
 
 export default function ImageDesignPage() {
+    const [lightboxUrl, setLightboxUrl] = useState(null);
     const {
         designs,
         selectedDesign,
@@ -103,6 +105,7 @@ export default function ImageDesignPage() {
                                     generatedData={selectedDesign.generated_images?.sustainable}
                                     onGenerate={() => generate('sustainable')}
                                     generating={generating}
+                                    onImageClick={setLightboxUrl}
                                 />
                             )}
 
@@ -115,8 +118,22 @@ export default function ImageDesignPage() {
                                     generatedData={selectedDesign.generated_images?.aesthetic}
                                     onGenerate={() => generate('aesthetic')}
                                     generating={generating}
+                                    onImageClick={setLightboxUrl}
                                 />
                             )}
+                        </div>
+                    )}
+
+                    {/* Lightbox modal para ver imagen ampliada */}
+                    {lightboxUrl && (
+                        <div className="imgdesign-lightbox" onClick={() => setLightboxUrl(null)}>
+                            <button className="imgdesign-lightbox-close" onClick={() => setLightboxUrl(null)}>✕</button>
+                            <img
+                                src={lightboxUrl}
+                                alt="Imagen ampliada del jardín"
+                                className="imgdesign-lightbox-img"
+                                onClick={(e) => e.stopPropagation()}
+                            />
                         </div>
                     )}
                 </div>
@@ -128,8 +145,13 @@ export default function ImageDesignPage() {
 /**
  * Tarjeta de propuesta con antes/después o botón de generar
  */
-function ProposalCard({ title, badge, proposal, generatedData, onGenerate, generating }) {
+function ProposalCard({ title, badge, proposal, generatedData, onGenerate, generating, onImageClick }) {
     const hasImage = generatedData?.generated_url;
+
+    // Añadir cache-buster a generated_url para evitar que el navegador muestre la imagen antigua tras regenerar
+    const generatedUrl = hasImage
+        ? `${generatedData.generated_url}${generatedData.generated_url.includes('?') ? '&' : '?'}t=${new Date(generatedData.created_at).getTime()}`
+        : null;
 
     return (
         <div className="imgdesign-proposal-card">
@@ -151,16 +173,25 @@ function ProposalCard({ title, badge, proposal, generatedData, onGenerate, gener
                             src={generatedData.original_url}
                             alt="Foto original del jardín"
                             className="imgdesign-comparison-img"
+                            onClick={() => onImageClick(generatedData.original_url)}
                         />
                     </div>
                     <div className="imgdesign-comparison-arrow">→</div>
                     <div className="imgdesign-comparison-item">
                         <span className="imgdesign-comparison-label imgdesign-comparison-label--after">Después</span>
                         <img
-                            src={generatedData.generated_url}
+                            src={generatedUrl}
                             alt="Jardín transformado con IA"
                             className="imgdesign-comparison-img"
+                            onClick={() => onImageClick(generatedUrl)}
                         />
+                        <button
+                            className="imgdesign-enlarge-btn"
+                            onClick={() => onImageClick(generatedUrl)}
+                            title="Ver imagen ampliada"
+                        >
+                            🔍 Ampliar
+                        </button>
                     </div>
                 </div>
             ) : (
