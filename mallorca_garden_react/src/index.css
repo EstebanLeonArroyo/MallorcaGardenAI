@@ -322,6 +322,7 @@ body {
         align-items: center;
         padding: 0;
         box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+        overflow: visible;
     }
 
     .sidebar-logo {
@@ -381,10 +382,12 @@ body {
         display: none;
     }
 
-    /* Main content → full width */
+    /* Main content → full width, natural scroll */
     .main-content {
         margin-left: 0;
         margin-right: 0;
+        min-height: auto;
+        overflow-y: visible;
     }
 
     .content-area {
