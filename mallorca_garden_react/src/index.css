@@ -2012,6 +2012,7 @@ input[type="file"] {
     flex-direction: column;
     gap: 0.8rem;
     z-index: 10001;
+    pointer-events: none;
 }
 
 /* Notification */
@@ -2027,6 +2028,7 @@ input[type="file"] {
     align-items: center;
     gap: 0.8rem;
     z-index: 10000;
+    pointer-events: auto;
     animation: slideInRight 0.3s ease, slideOutRight 0.3s ease 2.7s forwards;
 }
 
