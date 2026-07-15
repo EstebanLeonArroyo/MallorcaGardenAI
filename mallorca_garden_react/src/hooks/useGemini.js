@@ -38,7 +38,7 @@ export function useGemini() {
         setProposals(null);
 
         try {
-            // Convertir imágenes a base64
+            // Convertir imágenes a base64 una sola vez
             const imageFiles = images.map(img => img.file);
             const imagesBase64 = await Promise.all(
                 imageFiles.map(file => convertImageToBase64(file))
@@ -48,7 +48,7 @@ export function useGemini() {
             const aiProposals = await generateDesign(gardenData, imagesBase64);
             setProposals(aiProposals);
             setMode('ai');
-            return aiProposals;
+            return { proposals: aiProposals, imagesBase64 };
         } catch (err) {
             console.error('Error generando propuestas:', err);
             setError(err.message);

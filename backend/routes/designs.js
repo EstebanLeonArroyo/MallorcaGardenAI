@@ -126,14 +126,14 @@ router.put('/:id', validateUpdateProposals, async (req, res, next) => {
             return res.status(404).json({ error: 'Diseño no encontrado' });
         }
 
-        const { proposals } = req.body;
+        const { proposals, comparisonData } = req.body;
 
         const { error } = await supabase
             .from('garden_designs')
             .update({
                 proposal_sustainable: proposals.sustainable || null,
                 proposal_aesthetic: proposals.aesthetic || null,
-                comparison_data: {
+                comparison_data: comparisonData || {
                     sustainable: proposals.sustainable,
                     aesthetic: proposals.aesthetic,
                 },

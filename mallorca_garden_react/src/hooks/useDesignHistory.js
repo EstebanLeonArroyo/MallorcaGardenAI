@@ -47,25 +47,8 @@ export function useDesignHistory() {
         }
     }, []);
 
-    const saveCurrentDesign = useCallback(async (designName, inputs, proposals, comparisonData, uploadedImages) => {
+    const saveCurrentDesign = useCallback(async (designName, inputs, proposals, comparisonData, imagesBase64) => {
         try {
-            // Convertir imágenes a base64 para enviar al backend
-            const images = await Promise.all(
-                (uploadedImages || []).map(img => {
-                    return new Promise((resolve, reject) => {
-                        const reader = new FileReader();
-                        reader.onload = () => {
-                            resolve({
-                                data: reader.result.split(',')[1],
-                                mimeType: img.file.type || 'image/jpeg',
-                            });
-                        };
-                        reader.onerror = reject;
-                        reader.readAsDataURL(img.file);
-                    });
-                })
-            );
-
             const designData = {
                 name: designName,
                 inputs,
@@ -74,7 +57,7 @@ export function useDesignHistory() {
                     aesthetic: proposals.aesthetic,
                 },
                 comparisonData,
-                images,
+                images: imagesBase64 || [],
             };
 
             const result = await apiSaveDesign(designData);

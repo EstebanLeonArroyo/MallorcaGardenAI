@@ -75,7 +75,7 @@ export const validateGenerateDesign = [
     body('images.*.data')
         .optional()
         .isString()
-        .isLength({ max: 10 * 1024 * 1024 }).withMessage('Cada imagen no puede superar 7MB en base64'),
+        .isLength({ max: 10 * 1024 * 1024 }).withMessage('Cada imagen no puede superar 10MB en base64'),
 
     body('images.*.mimeType')
         .optional()
@@ -94,14 +94,23 @@ export const validateDesignId = [
 ];
 
 /**
+ * Validaciones para rutas con parámetro :designId (UUID)
+ * Usado por las rutas /api/image-design/:designId/...
+ */
+export const validateDesignIdParam = [
+    param('designId')
+        .isUUID().withMessage('ID de diseño inválido'),
+    handleValidationErrors,
+];
+
+/**
  * Validaciones para POST /api/designs (guardar diseño)
  */
 export const validateSaveDesign = [
     body('name')
         .trim()
         .notEmpty().withMessage('El nombre del diseño es obligatorio')
-        .isLength({ min: 1, max: 100 }).withMessage('El nombre debe tener entre 1 y 100 caracteres')
-        .escape(),
+        .isLength({ min: 1, max: 100 }).withMessage('El nombre debe tener entre 1 y 100 caracteres'),
 
     body('inputs.soil')
         .trim()
@@ -125,6 +134,16 @@ export const validateSaveDesign = [
         .isFloat({ min: 0.1, max: 1000 })
         .toFloat(),
 
+    body('inputs.area')
+        .optional({ nullable: true })
+        .isFloat({ min: 0 }).withMessage('El área debe ser un número positivo')
+        .toFloat(),
+
+    body('inputs.extraInfo')
+        .optional({ nullable: true })
+        .trim()
+        .isLength({ max: 1000 }).withMessage('La información adicional no puede superar 1000 caracteres'),
+
     body('proposals')
         .notEmpty().withMessage('Las propuestas son obligatorias')
         .isObject().withMessage('Las propuestas deben ser un objeto'),
@@ -142,6 +161,10 @@ export const validateUpdateProposals = [
     body('proposals')
         .notEmpty().withMessage('Las propuestas son obligatorias')
         .isObject().withMessage('Las propuestas deben ser un objeto'),
+
+    body('comparisonData')
+        .optional({ nullable: true })
+        .isObject().withMessage('comparisonData debe ser un objeto'),
 
     handleValidationErrors,
 ];

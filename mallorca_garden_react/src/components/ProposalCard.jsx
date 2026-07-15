@@ -60,7 +60,7 @@ export default function ProposalCard({ proposal, type, isEditing, onChangeQuanti
                         <li className="plant-empty-msg">No se encontraron plantas para esta propuesta.</li>
                     ) : (
                         plants.map((plant, index) => {
-                            const qty = plant.quantity || plant.qty || 0;
+                            const qty = plant.quantity || 0;
                             return (
                                 <li key={index} className={`plant-item${isEditing ? ' plant-item-editing' : ''}`}>
                                     {isEditing ? (

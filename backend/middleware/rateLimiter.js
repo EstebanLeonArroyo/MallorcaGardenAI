@@ -38,3 +38,16 @@ export const generalLimiter = rateLimit({
         return req.user?.id || req.ip;
     },
 });
+
+/**
+ * Rate limiter específico para generación de imágenes con Fal.ai
+ * 3 peticiones por ventana de 15 minutos por usuario.
+ */
+export const imageGenLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 3,
+    message: { error: 'Has alcanzado el límite de generación de imágenes. Espera 15 minutos.' },
+    keyGenerator: (req) => req.user?.id || req.ip,
+    standardHeaders: true,
+    legacyHeaders: false,
+});

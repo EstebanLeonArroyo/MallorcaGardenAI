@@ -8,8 +8,8 @@ export default function ComparisonTable({ proposalData }) {
     const sustainablePlants = sustainable?.plants || [];
     const aestheticPlants = aesthetic?.plants || [];
 
-    const sustainableCount = sustainablePlants.reduce((sum, p) => sum + (p.quantity || p.qty || 0), 0);
-    const aestheticCount = aestheticPlants.reduce((sum, p) => sum + (p.quantity || p.qty || 0), 0);
+    const sustainableCount = sustainablePlants.reduce((sum, p) => sum + (p.quantity || 0), 0);
+    const aestheticCount = aestheticPlants.reduce((sum, p) => sum + (p.quantity || 0), 0);
 
     const sustainableCost = sustainable?.totalCost || sustainable?.cost || 0;
     const aestheticCost = aesthetic?.totalCost || aesthetic?.cost || 0;

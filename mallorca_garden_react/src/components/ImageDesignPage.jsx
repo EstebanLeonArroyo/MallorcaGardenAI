@@ -98,7 +98,7 @@ export default function ImageDesignPage() {
                         <div className="imgdesign-proposals">
                             {/* Propuesta Sostenible */}
                             {selectedDesign.proposal_sustainable && (
-                                <ProposalCard
+                                <ImageProposalCard
                                     title="Propuesta Sostenible"
                                     badge="🌿 Sostenible"
                                     proposal={selectedDesign.proposal_sustainable}
@@ -111,7 +111,7 @@ export default function ImageDesignPage() {
 
                             {/* Propuesta Estética */}
                             {selectedDesign.proposal_aesthetic && (
-                                <ProposalCard
+                                <ImageProposalCard
                                     title="Propuesta Estética"
                                     badge="🎨 Estética"
                                     proposal={selectedDesign.proposal_aesthetic}
@@ -145,7 +145,7 @@ export default function ImageDesignPage() {
 /**
  * Tarjeta de propuesta con antes/después o botón de generar
  */
-function ProposalCard({ title, badge, proposal, generatedData, onGenerate, generating, onImageClick }) {
+function ImageProposalCard({ title, badge, proposal, generatedData, onGenerate, generating, onImageClick }) {
     const hasImage = generatedData?.generated_url;
 
     // Añadir cache-buster a generated_url para evitar que el navegador muestre la imagen antigua tras regenerar

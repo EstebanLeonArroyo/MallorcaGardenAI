@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback } from 'react';
 import ProposalCard from './ProposalCard';
 import ComparisonTable from './ComparisonTable';
 
@@ -6,7 +6,7 @@ const MIN_GARDEN_PRICE = 75;
 
 function recalcTotalCost(plants) {
     return plants.reduce((sum, p) => {
-        const qty = p.quantity || p.qty || 0;
+        const qty = p.quantity || 0;
         const cost = p.cost || 0;
         return sum + qty * cost;
     }, 0);
@@ -30,19 +30,10 @@ export default function ResultsSection({ proposals, designName, isLoaded, onRese
     const [showComparison, setShowComparison] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
 
-    // Local copy of proposals that persists edits
+    // Local copy of proposals that persists edits.
+    // El reseteo al cambiar `proposals` se gestiona en el padre vía key prop,
+    // por lo que aquí no hacemos syncronización manual con useEffect.
     const [localProposals, setLocalProposals] = useState(() => cloneProposals(proposals));
-    const prevProposalsRef = useRef(proposals);
-
-    // Sync local state when the parent passes a completely new proposals object
-    // (e.g. new design generated or loaded from history)
-    useEffect(() => {
-        if (proposals !== prevProposalsRef.current) {
-            setLocalProposals(cloneProposals(proposals));
-            setIsEditing(false);
-            prevProposalsRef.current = proposals;
-        }
-    }, [proposals]);
 
     const handleStartEdit = useCallback(() => {
         setIsEditing(true);
@@ -55,13 +46,13 @@ export default function ResultsSection({ proposals, designName, isLoaded, onRese
         const confirmed = cloneProposals(localProposals);
 
         if (confirmed.sustainable) {
-            confirmed.sustainable.plants = (confirmed.sustainable.plants || []).filter(p => (p.quantity || p.qty || 0) > 0);
+            confirmed.sustainable.plants = (confirmed.sustainable.plants || []).filter(p => (p.quantity || 0) > 0);
             const rawCost = recalcTotalCost(confirmed.sustainable.plants);
             confirmed.sustainable.totalCost = Math.max(rawCost, MIN_GARDEN_PRICE);
         }
 
         if (confirmed.aesthetic) {
-            confirmed.aesthetic.plants = (confirmed.aesthetic.plants || []).filter(p => (p.quantity || p.qty || 0) > 0);
+            confirmed.aesthetic.plants = (confirmed.aesthetic.plants || []).filter(p => (p.quantity || 0) > 0);
             const rawCost = recalcTotalCost(confirmed.aesthetic.plants);
             confirmed.aesthetic.totalCost = Math.max(rawCost, MIN_GARDEN_PRICE);
         }
@@ -83,9 +74,9 @@ export default function ResultsSection({ proposals, designName, isLoaded, onRese
             updated[type] = { ...updated[type] };
             updated[type].plants = updated[type].plants.map((p, i) => {
                 if (i !== plantIndex) return p;
-                const currentQty = p.quantity || p.qty || 0;
+                const currentQty = p.quantity || 0;
                 const newQty = Math.max(0, currentQty + delta);
-                return { ...p, quantity: newQty, qty: newQty };
+                return { ...p, quantity: newQty };
             });
             updated[type].totalCost = Math.max(recalcTotalCost(updated[type].plants), MIN_GARDEN_PRICE);
             return updated;

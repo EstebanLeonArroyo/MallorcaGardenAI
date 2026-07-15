@@ -5,23 +5,13 @@
 import { Router } from 'express';
 import { fal } from '@fal-ai/client';
 import { requireAuth, supabase } from '../middleware/auth.js';
-import { validateDesignId } from '../middleware/sanitize.js';
+import { imageGenLimiter } from '../middleware/rateLimiter.js';
+import { validateDesignIdParam } from '../middleware/sanitize.js';
 
 const router = Router();
 
 // Configurar Fal.ai con la API key
 fal.config({ credentials: process.env.FAL_KEY });
-
-// Rate limiter específico para generación de imágenes (3 req / 15 min)
-import rateLimit from 'express-rate-limit';
-const imageGenLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 3,
-    message: { error: 'Has alcanzado el límite de generación de imágenes. Espera 15 minutos.' },
-    keyGenerator: (req) => req.user?.id || req.ip,
-    standardHeaders: true,
-    legacyHeaders: false,
-});
 
 router.use(requireAuth, imageGenLimiter);
 
@@ -29,7 +19,7 @@ router.use(requireAuth, imageGenLimiter);
  * POST /api/image-design/:designId/generate
  * Body: { proposalType: 'sustainable' | 'aesthetic' }
  */
-router.post('/:designId/generate', validateDesignId.slice(0, -1), async (req, res, next) => {
+router.post('/:designId/generate', validateDesignIdParam, async (req, res, next) => {
     try {
         const { designId } = req.params;
         const { proposalType } = req.body;

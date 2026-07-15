@@ -2,16 +2,17 @@ import ProgressIndicator from './ProgressIndicator';
 import ImageUploader from './ImageUploader';
 import SoilSelector from './SoilSelector';
 
-export default function GardenForm({ form, onSubmit }) {
+export default function GardenForm({ form, onSubmit, submitting, onNotify }) {
     const handleSubmit = (e) => {
         e.preventDefault();
+        if (submitting) return;
 
         if (!form.soil) {
-            alert('Por favor, selecciona un tipo de suelo estimado.');
+            onNotify?.('Por favor, selecciona un tipo de suelo estimado.', 'error');
             return;
         }
         if (!form.designName.trim()) {
-            alert('Por favor, ingresa un nombre para el diseño.');
+            onNotify?.('Por favor, ingresa un nombre para el diseño.', 'error');
             return;
         }
 
@@ -119,7 +120,7 @@ export default function GardenForm({ form, onSubmit }) {
                                 type="number"
                                 id="budget-input"
                                 placeholder="Ej: 5000"
-                                min="100"
+                                min="50"
                                 required
                                 value={form.budget}
                                 onChange={(e) => form.setBudget(e.target.value)}
@@ -133,7 +134,7 @@ export default function GardenForm({ form, onSubmit }) {
                                 id="extra-info-input"
                                 className="extra-info-textarea"
                                 placeholder="Ej: Añademe una lavanda y un olivo"
-                                maxLength="500"
+                                maxLength="1000"
                                 rows="3"
                                 value={form.extraInfo}
                                 onChange={(e) => form.setExtraInfo(e.target.value)}
@@ -143,7 +144,9 @@ export default function GardenForm({ form, onSubmit }) {
                     </div>
                 </div>
 
-                <button type="submit" className="cta-button">Generar Propuestas</button>
+                <button type="submit" className="cta-button" disabled={submitting}>
+                {submitting ? 'Generando...' : 'Generar Propuestas'}
+            </button>
             </form>
         </section>
     );

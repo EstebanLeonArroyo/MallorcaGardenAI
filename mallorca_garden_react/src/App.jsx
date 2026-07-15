@@ -6,7 +6,8 @@ import ResultsSection from './components/ResultsSection';
 import HistoryPanel from './components/HistoryPanel';
 import ImageDesignPage from './components/ImageDesignPage';
 import LoadingOverlay from './components/LoadingOverlay';
-import NotificationContainer, { useNotifications } from './components/Notification';
+import NotificationContainer from './components/Notification';
+import { useNotifications } from './hooks/useNotifications';
 import { useAuth } from './hooks/useAuth';
 import { useGardenForm } from './hooks/useGardenForm';
 import { useGemini } from './hooks/useGemini';
@@ -22,6 +23,9 @@ function App() {
   const [isLoadedDesign, setIsLoadedDesign] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [currentDesignId, setCurrentDesignId] = useState(null);
+  // Token que cambia al generar/cargar un diseño. Sirve como `key` de
+  // <ResultsSection> para resetear su estado interno (edición, cantidades).
+  const [resultsToken, setResultsToken] = useState(0);
 
   const form = useGardenForm();
   const gemini = useGemini();
@@ -43,7 +47,7 @@ function App() {
     setSubmitting(true);
 
     try {
-      const proposals = await gemini.generateProposals(form.uploadedImages, gardenData);
+      const { proposals, imagesBase64 } = await gemini.generateProposals(form.uploadedImages, gardenData);
 
       // Build comparison data
       const comparisonData = {
@@ -51,10 +55,10 @@ function App() {
         aesthetic: proposals.aesthetic
       };
 
-      // Save via backend API
+      // Save via backend API (reutiliza las imágenes ya convertidas a base64)
       try {
         const designId = await history.saveCurrentDesign(
-          name, gardenData, proposals, comparisonData, form.uploadedImages
+          name, gardenData, proposals, comparisonData, imagesBase64
         );
         if (designId) {
           setCurrentDesignId(designId);
@@ -66,23 +70,21 @@ function App() {
 
       setDesignNameForResults(name);
       setIsLoadedDesign(false);
+      setResultsToken(t => t + 1);
       setActiveView('results');
       window.scrollTo({ top: 0, behavior: 'smooth' });
 
     } catch (error) {
-      const retry = confirm(
-        `Error al generar diseño: ${error.message}\n\n¿Quieres generar propuestas en modo local sin IA?`
-      );
-      if (retry) {
-        try {
-          await gemini.generateLocalFallback(gardenData);
-          setDesignNameForResults(name);
-          setIsLoadedDesign(false);
-          setActiveView('results');
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        } catch (localError) {
-          alert('Error en modo local: ' + localError.message);
-        }
+      addNotification(`IA no disponible. Usando modo local: ${error.message}`, 'error');
+      try {
+        await gemini.generateLocalFallback(gardenData);
+        setDesignNameForResults(name);
+        setIsLoadedDesign(false);
+        setResultsToken(t => t + 1);
+        setActiveView('results');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } catch (localError) {
+        addNotification(`Error en modo local: ${localError.message}`, 'error');
       }
     } finally {
       setSubmitting(false);
@@ -100,12 +102,13 @@ function App() {
       };
 
       gemini.resetProposals();
+      gemini.setProposalsDirectly(proposals);
       setDesignNameForResults(design.name);
       setIsLoadedDesign(true);
       setCurrentDesignId(designId);
+      setResultsToken(t => t + 1);
       setActiveView('results');
 
-      window.__loadedProposals = proposals;
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
       addNotification(`Error al cargar diseño: ${error.message}`, 'error');
@@ -127,7 +130,6 @@ function App() {
     if (gemini.proposals) {
       gemini.setProposalsDirectly(updatedProposals);
     }
-    window.__loadedProposals = updatedProposals;
 
     if (currentDesignId) {
       try {
@@ -149,7 +151,7 @@ function App() {
   }, [handleReset]);
 
   // Determine which proposals to show
-  const currentProposals = gemini.proposals || window.__loadedProposals || null;
+  const currentProposals = gemini.proposals || null;
 
   // --- Auth loading state ---
   if (auth.loading) {
@@ -181,7 +183,12 @@ function App() {
       <div className="main-content">
         <div className="content-area">
           {activeView === 'form' && (
-            <GardenForm form={form} onSubmit={handleSubmit} />
+            <GardenForm
+              form={form}
+              onSubmit={handleSubmit}
+              submitting={submitting}
+              onNotify={addNotification}
+            />
           )}
 
           {activeView === 'history' && (
@@ -194,6 +201,7 @@ function App() {
 
           {activeView === 'results' && currentProposals && (
             <ResultsSection
+              key={resultsToken}
               proposals={currentProposals}
               designName={designNameForResults}
               isLoaded={isLoadedDesign}

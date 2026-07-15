@@ -47,24 +47,24 @@ function DesignImages({ imageUrls }) {
 }
 
 export default function HistoryPanel({ history, onClose, onLoadDesign }) {
-    const [expandedCard, setExpandedCard] = useState(null);
+    const { loadDesigns } = history;
+    const [pendingDelete, setPendingDelete] = useState(null);
 
     useEffect(() => {
-        history.loadDesigns();
-    }, []);
+        loadDesigns();
+    }, [loadDesigns]);
 
-    const handleDelete = async (id, name) => {
-        if (confirm(`¿Estás seguro de que quieres eliminar "${name}"?\n\nEsta acción no se puede deshacer.`)) {
-            try {
-                await history.deleteDesign(id);
-            } catch {
-                // Error handled in hook
-            }
+    const handleDeleteClick = (id) => {
+        // Primera pulsación: marca como pendiente de confirmación
+        if (pendingDelete !== id) {
+            setPendingDelete(id);
+            // Auto-cancela la confirmación tras 4 segundos
+            setTimeout(() => setPendingDelete(prev => (prev === id ? null : prev)), 4000);
+            return;
         }
-    };
-
-    const toggleExpand = (id) => {
-        setExpandedCard(expandedCard === id ? null : id);
+        // Segunda pulsación: elimina definitivamente
+        setPendingDelete(null);
+        history.deleteDesign(id).catch(() => { /* Error handled in hook */ });
     };
 
     return (
@@ -82,7 +82,7 @@ export default function HistoryPanel({ history, onClose, onLoadDesign }) {
 
             <div id="history-content">
                 {history.designs.map(design => (
-                    <div key={design.id} className={`design-card${expandedCard === design.id ? ' expanded' : ''}`}>
+                    <div key={design.id} className="design-card">
                         <div className="design-card-header">
                             <div className="design-card-title">{design.name}</div>
                             <div className="design-card-date">{formatDate(design.created_at)}</div>
@@ -127,10 +127,10 @@ export default function HistoryPanel({ history, onClose, onLoadDesign }) {
                                 Ver Diseño
                             </button>
                             <button
-                                className="design-card-btn btn-delete"
-                                onClick={() => handleDelete(design.id, design.name)}
+                                className={`design-card-btn btn-delete${pendingDelete === design.id ? ' confirming' : ''}`}
+                                onClick={() => handleDeleteClick(design.id)}
                             >
-                                Eliminar
+                                {pendingDelete === design.id ? '¿Confirmar?' : 'Eliminar'}
                             </button>
                         </div>
                     </div>
